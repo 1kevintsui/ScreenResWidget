@@ -8,14 +8,18 @@ class Window(Tk.Tk):
     def __init__(self):
         super().__init__()
         self.ahk = AHK()
-        self.ahk.add_hotkey('>!9', callback=self.toggle)
-        self.ahk.start_hotkeys()  # start the hotkey process thread
         config = cp.ConfigParser()
         config.read('./config.ini')
         self.res1x = config['Resolution One']['width']
         self.res1y = config['Resolution One']['height']
         self.res2x = config['Resolution Two']['width']
         self.res2y = config['Resolution Two']['height']
+        
+        key1 = config['HotKey']['key1']
+        key2 = config['HotKey']['key2']
+        self.key = self.__assignkey(key1) + key2
+        self.ahk.add_hotkey(self.key, callback=self.toggle)
+        self.ahk.start_hotkeys()  # start the hotkey process thread
         self.geometry("250x50")
         self.title(f"{config['Title']['Title']}")
         self.resizable(0,0)
@@ -49,6 +53,31 @@ class Window(Tk.Tk):
     
     def __del__(self):
         pass
+    
+    def __assignkey(self, key):
+        match key.lower():
+            case 'alt':
+                return '!'
+            case 'alt_r':
+                return '>!'
+            case 'alt_l':
+                return '<!'
+            case 'ctrl':
+                return '^'
+            case 'ctrl_l':
+                return '<^'
+            case 'ctrl_r':
+                return '>^'
+            case 'shift':
+                return '+'
+            case 'shift_l':
+                return '<+'
+            case 'shift_r':
+                return '>+'               
+            case _:
+                return ''
+
+        
         
 def main():
   app = Window()
