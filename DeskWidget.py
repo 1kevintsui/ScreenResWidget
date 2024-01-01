@@ -9,14 +9,18 @@ class Window(Tk.Tk):
     def __init__(self):
         super().__init__()
         self.ahk = AHK()
+        self.options = 3
         config = cp.ConfigParser()
         config.read('./config.ini')
         self.res1x = config['Resolution One']['width']
         self.res1y = config['Resolution One']['height']
         self.res2x = config['Resolution Two']['width']
         self.res2y = config['Resolution Two']['height']
-        self.res3x = config['Resolution Three']['width']
-        self.res3y = config['Resolution Three']['height']
+        try:
+            self.res3x = config['Resolution Three']['width']
+            self.res3y = config['Resolution Three']['height']
+        except:
+            self.options = 2
         
         key1 = config['HotKey']['key1']
         key2 = config['HotKey']['key2']
@@ -29,79 +33,54 @@ class Window(Tk.Tk):
         self.resizable(1,1)
         self.columnconfigure(index=0, weight=1)
         self.columnconfigure(index=1, weight=1)
-        self.columnconfigure(index=2, weight=1)
+        if self.options == 3:
+            self.columnconfigure(index=2, weight=1)
         
         self.res1 = Tk.Button(self,command=partial(self.resolution_changer,
-                                                   resx=self.res1x, rexy=self.res1y))
+                                                   option=0))
         self.res1.configure(text=f"{self.res1x}x{self.res1y}")
         
         self.res2 = Tk.Button(self,command=partial(self.resolution_changer,
-                                                   resx=self.res2x, rexy=self.res2y))
+                                                   option=1))
         self.res2.configure(text=f"{self.res2x}x{self.res2y}")
         
-        self.res3 = Tk.Button(self,command=partial(self.resolution_changer,
-                                                  resx=self.res3x, rexy=self.res3y))
-        self.res3.configure(text=f"{self.res3x}x{self.res3y}")
+        if self.options == 3:
+            self.res3 = Tk.Button(self,command=partial(self.resolution_changer,
+                                                      option=2))
+            self.res3.configure(text=f"{self.res3x}x{self.res3y}")
         
         self.res1.configure(height=3)
         self.res1.grid(row=0, column=0, sticky='nsew')
         self.res2.grid(row=0, column=1, sticky='nsew')
-        self.res3.grid(row=0, column=2, sticky='nsew')
+        if self.options == 3:
+            self.res3.grid(row=0, column=2, sticky='nsew')
         self.resolution_toggle = 0
         self.update()
         
-    def test(self):
-        print("hotkey")
-        
-    def resolution_changer(self, flip=False, resx=0, resy=0):
+    def resolution_changer(self, flip=False, option=0):
         if flip:
-            print(self.resolution_toggle)
-            if self.resolution_toggle % 3 == 0:
-                sp.call(f"./qres.exe /x {self.res1x} /y {self.res1y}")
-                self.title(f"{self.res1x}x{self.res1y}")
-            elif self.resolution_toggle % 3 == 1:
-                sp.call(f"./qres.exe /x {self.res2x} /y {self.res2y}")
-                self.title(f"{self.res2x}x{self.res2y}")
+            if self.options == 3:
+                if self.resolution_toggle == 2:
+                    self.resolution_toggle = 0
+                else:
+                    self.resolution_toggle += 1
             else:
+                if self.resolution_toggle == 1:
+                    self.resolution_toggle = 0
+                else:
+                    self.resolution_toggle = 1
+        else:
+            self.resolution_toggle = option
+        if self.resolution_toggle == 0:
+            sp.call(f"./qres.exe /x {self.res1x} /y {self.res1y}")
+            self.title(f"{self.res1x}x{self.res1y}")
+        elif self.resolution_toggle == 1:
+            sp.call(f"./qres.exe /x {self.res2x} /y {self.res2y}")
+            self.title(f"{self.res2x}x{self.res2y}")
+        else:
+            if self.options == 3:
                 sp.call(f"./qres.exe /x {self.res3x} /y {self.res3y}")
                 self.title(f"{self.res3x}x{self.res3y}")
-            self.resolution_toggle += 1
-            if self.resolution_toggle > 5:
-                self.resolution_toggle = 0
-        else:
-            sp.call(f"./qres.exe /x {resx} /y {resy}")
-            self.title(f"{resx}x{resy}")
-            
-
-    def resolution_one(self):
-        sp.call(f"./qres.exe /x {self.res1x} /y {self.res1y}")
-        self.resolution_toggle = False
-        self.title(f"{self.res1x}x{self.res1y}")
-        
-    def resolution_two(self):
-        sp.call(f"./qres.exe /x {self.res2x} /y {self.res2y} ")
-        self.resolution_toggle = True
-        self.title(f"{self.res2x}x{self.res2y}")
-        
-    def resolution_three(self):
-        sp.call(f"./qres.exe /x {self.res3x} /y {self.res3y} ")
-        self.resolution_toggle = True
-        self.title(f"{self.res3x}x{self.res3y}")
-        
-    def toggle(self):
-        print(self.resolution_toggle)
-        if self.resolution_toggle % 3 == 0:
-            self.resolution_toggle = False
-            self.resolution_one()
-        elif self.resolution_toggle % 3 == 1:
-            self.resolution_toggle = True
-            self.resolution_two()
-        else:
-            self.resolution_toggle = True
-            self.resolution_three()
-        self.resolution_toggle += 1
-        if self.resolution_toggle > 5:
-            self.resolution_toggle = 0
     
     def __del__(self):
         pass
