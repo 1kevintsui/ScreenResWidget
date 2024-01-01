@@ -16,6 +16,8 @@ class Window(Tk.Tk):
         self.res1y = config['Resolution One']['height']
         self.res2x = config['Resolution Two']['width']
         self.res2y = config['Resolution Two']['height']
+        self.window = config['Window']['size']
+        
         try:
             self.res3x = config['Resolution Three']['width']
             self.res3y = config['Resolution Three']['height']
@@ -28,9 +30,11 @@ class Window(Tk.Tk):
         self.ahk.add_hotkey(self.key, callback=partial(self.resolution_changer,
                                                             flip=True))
         self.ahk.start_hotkeys()  # start the hotkey process thread
-        self.geometry("250x50")
+        self.geometry(self.window)
         self.title(f"{config['Title']['Title']}")
-        self.resizable(1,1)
+        self.resizable(0,0)
+        self.wm_attributes('-toolwindow', True)
+        self.wm_attributes('-topmost', True)
         self.columnconfigure(index=0, weight=1)
         self.columnconfigure(index=1, weight=1)
         if self.options == 3:
@@ -49,7 +53,7 @@ class Window(Tk.Tk):
                                                       option=2))
             self.res3.configure(text=f"{self.res3x}x{self.res3y}")
         
-        self.res1.configure(height=3)
+        self.res1.configure(height=1)
         self.res1.grid(row=0, column=0, sticky='nsew')
         self.res2.grid(row=0, column=1, sticky='nsew')
         if self.options == 3:
