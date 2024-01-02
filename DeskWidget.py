@@ -19,6 +19,7 @@ class Window(Tk.Tk):
         self.res2y = config['Resolution Two']['height']
         self.windowx = config['Window']['width']
         self.windowy = config['Window']['height']
+        self.docked = config['Window'].getboolean('docked')
         
         try:
             self.res3x = config['Resolution Three']['width']
@@ -36,10 +37,18 @@ class Window(Tk.Tk):
         self.screenx = self.winfo_screenwidth()
         self.screeny = self.winfo_screenheight()
 
-        self.window = f"{self.windowx}x{self.windowy}+0+{(self.screeny-int(self.windowy)-3)}"
+        if self.docked:
+            self.window = f"{self.windowx}x{self.windowy}+0+{(self.screeny-int(self.windowy)-3)}"
+            self.overrideredirect(True)
+        else:
+            self.title(f"{config['Title']['Title']}")
+            self.resizable(0,0)
+            tempx = f"+{str(int(self.screenx / 2) - int(int(self.windowx)/2))}"
+            tempy = f"+{str(int(self.screeny / 2) - int(int(self.windowx)/2))}"
+            self.window=f"{self.windowx}x{self.windowy}{tempx}{tempy}"
+        
         self.geometry(self.window)
         self.wm_attributes('-topmost', True)
-        self.overrideredirect(True)
         
         self.columnconfigure(index=0, weight=1)
         self.columnconfigure(index=1, weight=1)
@@ -51,7 +60,7 @@ class Window(Tk.Tk):
                                                    option=0))
         self.res1.configure(text=f"{self.res1x}x{self.res1y}",
                             font=('arial',11, 'bold'),
-                            relief='raised', height=2)
+                            relief='flat', height=2)
         self.res1.bind('<Button-3>', self.close)
         self.res1.bind('<Double-Button-1>', self.close)
         
@@ -60,7 +69,7 @@ class Window(Tk.Tk):
                                                    option=1))
         self.res2.configure(text=f"{self.res2x}x{self.res2y}",
                             font=('arial',11, 'bold'),
-                            relief='raised', height=2)
+                            relief='flat', height=2)
         self.res2.bind('<Button-3>', self.close)
         self.res2.bind('<Double-Button-1>', self.close)
         
@@ -70,7 +79,7 @@ class Window(Tk.Tk):
                                                       option=2))
             self.res3.configure(text=f"{self.res3x}x{self.res3y}",
                             font=('arial',11, 'bold'),
-                            relief='raised', height=2)
+                            relief='flat', height=2)
             self.res3.bind('<Button-3>', self.close)
             self.res3.bind('<Double-Button-1>', self.close)
         
@@ -97,19 +106,25 @@ class Window(Tk.Tk):
         if self.resolution_toggle == 0:
             self.res1.configure(background=self.selected_color, relief='sunken')
             self.res2.configure(background="#f0f0f0", relief='raised')
-            self.res3.configure(background="#f0f0f0", relief='raised')
-            self.window = f"{self.windowx}x{self.windowy}+0+{(int(self.res1y)-int(self.windowy)-3)}"
-            self.geometry(self.window)
+            if self.options == 3:
+                self.res3.configure(background="#f0f0f0", relief='raised')
+            if self.docked:
+                self.window = f"{self.windowx}x{self.windowy}+0+{(int(self.res1y)-int(self.windowy)-3)}"
+                self.geometry(self.window)
         elif self.resolution_toggle == 1:
             self.res2.configure(background=self.selected_color, relief='sunken')
-            self.window = f"{self.windowx}x{self.windowy}+0+{(int(self.res2y)-int(self.windowy)-3)}"
-            self.geometry(self.window)
+            if self.docked:
+                self.window = f"{self.windowx}x{self.windowy}+0+{(int(self.res2y)-int(self.windowy)-3)}"
+                self.geometry(self.window)
             self.res1.configure(background="#f0f0f0", relief='raised')
-            self.res3.configure(background="#f0f0f0", relief='raised')
+            if self.options == 3:
+                self.res3.configure(background="#f0f0f0", relief='raised')
         else:
-            self.res3.configure(background=self.selected_color, relief='sunken')
-            self.window = f"{self.windowx}x{self.windowy}+0+{(int(self.res3y)-int(self.windowy)-3)}"
-            self.geometry(self.window)
+            if self.options == 3:
+                self.res3.configure(background=self.selected_color, relief='sunken')
+            if self.docked:
+                self.window = f"{self.windowx}x{self.windowy}+0+{(int(self.res3y)-int(self.windowy)-3)}"
+                self.geometry(self.window)
             self.res1.configure(background="#f0f0f0", relief='raised')
             self.res2.configure(background="#f0f0f0", relief='raised')
 
@@ -170,7 +185,8 @@ app = Window()
 def keep_top():
     app.lift()
     app.after(2000,keep_top)
-keep_top()
+if app.docked:
+    keep_top()
 app.mainloop()
 
 
