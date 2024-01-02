@@ -4,7 +4,7 @@ import os as os
 import configparser as cp
 from functools import partial
 from ahk import AHK
-from PyHotKey import Key, keyboard_manager as manager
+import sys as sys
 
 class Window(Tk.Tk):
     def __init__(self):
@@ -90,7 +90,9 @@ class Window(Tk.Tk):
         
         #set button color for selected option
         self.selected_color = config['Window']['selected']
-        
+        self.resolution_changer(option=self.resolution_toggle)
+        self.button_color()
+        self.update()
     def button_color(self):
         if self.resolution_toggle == 0:
             self.res1.configure(background=self.selected_color, relief='sunken')
@@ -112,6 +114,7 @@ class Window(Tk.Tk):
             self.res2.configure(background="#f0f0f0", relief='raised')
 
     def resolution_changer(self, flip=False, option=0):
+        self.lift()
         if flip:
             if self.options == 3:
                 if self.resolution_toggle == 2:
@@ -132,11 +135,13 @@ class Window(Tk.Tk):
         else:
             if self.options == 3:
                 sp.call(f"./qres.exe /x {self.res3x} /y {self.res3y}")
+        self.button_color()
     
     def close(self, event):
         self.ahk.stop_hotkeys()
         self.destroy()
         self.quit()
+        sys.exit()
     
     def __assignkey(self, key):
         match key.lower():
@@ -160,17 +165,12 @@ class Window(Tk.Tk):
                 return '>+'               
             case _:
                 return ''
-        
-def main():
-  app = Window()
-  while True:
-    app.update_idletasks()
-    app.button_color()
-    app.update()
-    try:
-        app.lift()
-    except:
-        exit()
+  
+app = Window()
+def keep_top():
+    app.lift()
+    app.after(2000,keep_top)
+keep_top()
+app.mainloop()
 
-if __name__ == "__main__":
-  main()
+
